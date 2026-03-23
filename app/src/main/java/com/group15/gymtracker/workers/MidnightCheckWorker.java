@@ -8,21 +8,24 @@ import androidx.room.Room;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
 import com.group15.gymtracker.database.AppDatabase;
 import com.group15.gymtracker.database.entities.DailyTargetEntity;
+import com.group15.gymtracker.domain.AppLocker;
+import com.group15.gymtracker.domain.StreakTracker;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 public class MidnightCheckWorker extends Worker {
 
     private static final String TAG = "MidnightCheckWorker";
+    private static final boolean FORCE_TEST_LOCK = true;
 
-    public MidnightCheckWorker(
-            @NonNull Context context,
-            @NonNull WorkerParameters workerParams
-    ) {
+    public MidnightCheckWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
 
@@ -44,28 +47,66 @@ public class MidnightCheckWorker extends Worker {
         Log.d(TAG, "Yesterday date = " + yesterdayDate);
         Log.d(TAG, "Yesterday day = " + yesterdayDay);
 
-        AppDatabase db = Room.databaseBuilder(
-                getApplicationContext(),
-                AppDatabase.class,
-                "gym_tracker_db"
-        ).build();
+        boolean isGymDay = false;
+        boolean targetMet = false;
 
-        DailyTargetEntity target = db.dailyTargetDao().getTargetForDay(yesterdayDay);
+        try {
+            AppDatabase db = Room.databaseBuilder(
+                    getApplicationContext(),
+                    AppDatabase.class,
+                    "gym_tracker_db"
+            ).build();
 
-        if (target == null) {
-            Log.d(TAG, "No target found for " + yesterdayDay + ", treat as non-gym day");
-            return Result.success();
+            DailyTargetEntity target = db.dailyTargetDao().getTargetForDay(yesterdayDay);
+            if (target == null) {
+                Log.d(TAG, "No target found for " + yesterdayDay + ", treat as non-gym day");
+            } else {
+                Log.d(TAG, "Target minutes = " + target.targetMinutes);
+                isGymDay = target.targetMinutes > 0;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Database read failed", e);
+            return Result.failure();
         }
 
-        Log.d(TAG, "Target minutes = " + target.targetMinutes);
-
-        if (target.targetMinutes <= 0) {
-            Log.d(TAG, "Yesterday was not a gym day");
-            return Result.success();
+        if (FORCE_TEST_LOCK) {
+            isGymDay = true;
+            targetMet = false;
+            Log.d(TAG, "FORCE_TEST_LOCK enabled");
         }
 
-        Log.d(TAG, "Yesterday WAS a gym day");
+        StreakTracker.State oldState = new StreakTracker.State(3, 5, 0);
+        StreakTracker tracker = new StreakTracker();
+        StreakTracker.Result result = tracker.evaluate(isGymDay, targetMet, oldState);
+
+        AppLocker locker = new AppLocker(getApplicationContext());
+        if (result.shouldUnlock) {
+            locker.unlockApps();
+            Log.d(TAG, "Apps unlocked. Reason = " + result.reason);
+        }
+
+        if (result.shouldLock) {
+            Set<String> blocked = new HashSet<>(Arrays.asList(
+                    "com.google.android.youtube"
+            ));
+            locker.lockApps(blocked, result.reason, getNextMidnightMillis());
+            Log.d(TAG, "Apps locked. Reason = " + result.reason);
+        }
+
+        Log.d(TAG, "New streak = " + result.newState.currentStreak
+                + ", longest = " + result.newState.longestStreak
+                + ", freeze = " + result.newState.freezeTokens);
 
         return Result.success();
+    }
+
+    private long getNextMidnightMillis() {
+        Calendar next = Calendar.getInstance();
+        next.add(Calendar.DAY_OF_YEAR, 1);
+        next.set(Calendar.HOUR_OF_DAY, 0);
+        next.set(Calendar.MINUTE, 0);
+        next.set(Calendar.SECOND, 0);
+        next.set(Calendar.MILLISECOND, 0);
+        return next.getTimeInMillis();
     }
 }

@@ -1,21 +1,82 @@
 package com.group15.gymtracker
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import com.group15.gymtracker.domain.AppLocker
+import com.group15.gymtracker.ui.theme.GymTrackerTheme
 import com.group15.gymtracker.workers.MidnightCheckWorker
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val request = OneTimeWorkRequest.Builder(MidnightCheckWorker::class.java).build()
-        WorkManager.getInstance(this).enqueue(request)
-
         setContent {
-            //default compose staff
+            GymTrackerTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    HomeScreen(
+                        onRunWorker = {
+                            val request = OneTimeWorkRequest.Builder(MidnightCheckWorker::class.java).build()
+                            WorkManager.getInstance(this).enqueue(request)
+                            Toast.makeText(this, "MidnightCheckWorker enqueued", Toast.LENGTH_SHORT).show()
+                        },
+                        onClearLock = {
+                            AppLocker(this).unlockApps()
+                            Toast.makeText(this, "Lock state cleared", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeScreen(
+    onRunWorker: () -> Unit,
+    onClearLock: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Gym Tracker",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Text(
+            text = "Accessibility lock testing is now manual, so the app no longer locks itself on startup.",
+            modifier = Modifier.padding(top = 12.dp, bottom = 24.dp)
+        )
+        Button(onClick = onRunWorker) {
+            Text("Run Midnight Check")
+        }
+        Button(
+            onClick = onClearLock,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Text("Clear Lock State")
         }
     }
 }
