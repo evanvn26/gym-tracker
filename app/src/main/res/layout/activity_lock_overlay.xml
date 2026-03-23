@@ -7,9 +7,31 @@
     android:padding="24dp">
 
     <TextView
+        android:id="@+id/lockTitleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="This app is locked"
-        android:textSize="20sp" />
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
+    <TextView
+        android:id="@+id/lockReasonText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Reason:" />
+
+    <TextView
+        android:id="@+id/lockedPackageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Blocked app:" />
+
+    <TextView
+        android:id="@+id/unlockTimeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Unlocks at:" />
 </LinearLayout>
