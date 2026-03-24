@@ -4,12 +4,13 @@ import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.room.Room;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import com.group15.gymtracker.database.AppDatabase;
 import com.group15.gymtracker.database.entities.DailyTargetEntity;
+import com.group15.gymtracker.database.entities.GymSessionEntity;
+import com.group15.gymtracker.database.entities.UserInfoEntity;
 import com.group15.gymtracker.domain.AppLocker;
 import com.group15.gymtracker.domain.StreakTracker;
 
@@ -51,11 +52,7 @@ public class MidnightCheckWorker extends Worker {
         boolean targetMet = false;
 
         try {
-            AppDatabase db = Room.databaseBuilder(
-                    getApplicationContext(),
-                    AppDatabase.class,
-                    "gym_tracker_db"
-            ).build();
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
 
             DailyTargetEntity target = db.dailyTargetDao().getTargetForDay(yesterdayDay);
             if (target == null) {
