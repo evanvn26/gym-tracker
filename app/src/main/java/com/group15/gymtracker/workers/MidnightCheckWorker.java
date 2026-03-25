@@ -9,15 +9,14 @@ import androidx.work.WorkerParameters;
 
 import com.group15.gymtracker.database.AppDatabase;
 import com.group15.gymtracker.database.entities.DailyTargetEntity;
-import com.group15.gymtracker.database.entities.GymSessionEntity;
-import com.group15.gymtracker.database.entities.UserInfoEntity;
+import com.group15.gymtracker.database.dao.UserInfoDao;
 import com.group15.gymtracker.domain.AppLocker;
 import com.group15.gymtracker.domain.StreakTracker;
+import com.group15.gymtracker.onboarding.OnboardingUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
@@ -50,6 +49,7 @@ public class MidnightCheckWorker extends Worker {
 
         boolean isGymDay = false;
         boolean targetMet = false;
+        Set<String> blockedPackages = Collections.emptySet();
 
         try {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
@@ -61,6 +61,8 @@ public class MidnightCheckWorker extends Worker {
                 Log.d(TAG, "Target minutes = " + target.targetMinutes);
                 isGymDay = target.targetMinutes > 0;
             }
+
+            blockedPackages = readBlockedPackages(db.userInfoDao());
         } catch (Exception e) {
             Log.e(TAG, "Database read failed", e);
             return Result.failure();
@@ -83,11 +85,12 @@ public class MidnightCheckWorker extends Worker {
         }
 
         if (result.shouldLock) {
-            Set<String> blocked = new HashSet<>(Arrays.asList(
-                    "com.google.android.youtube"
-            ));
-            locker.lockApps(blocked, result.reason, getNextMidnightMillis());
-            Log.d(TAG, "Apps locked. Reason = " + result.reason);
+            if (blockedPackages.isEmpty()) {
+                Log.w(TAG, "Skipping app lock because no persisted blocked packages were found");
+            } else {
+                locker.lockApps(blockedPackages, result.reason, getNextMidnightMillis());
+                Log.d(TAG, "Apps locked. Reason = " + result.reason);
+            }
         }
 
         Log.d(TAG, "New streak = " + result.newState.currentStreak
@@ -95,6 +98,10 @@ public class MidnightCheckWorker extends Worker {
                 + ", freeze = " + result.newState.freezeTokens);
 
         return Result.success();
+    }
+
+    static Set<String> readBlockedPackages(UserInfoDao userInfoDao) {
+        return OnboardingUtils.deserializeBlockedPackages(userInfoDao.getBlockedApps());
     }
 
     private long getNextMidnightMillis() {
