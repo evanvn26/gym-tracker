@@ -111,12 +111,7 @@ public class LocationVerifier {
      * @return true if checkout successful, false if no active session
      */
     public boolean checkOut() {
-        GymSessionEntity activeSession = gymSessionDao.getActiveSession();
-        if (activeSession != null) {
-            long checkOutTime = System.currentTimeMillis();
-            gymSessionDao.updateCheckOutTime(activeSession.verificationId, checkOutTime);
-            return true;
-        }
-        return false; // No active session to check out from
+        return new GymSessionTracker(gymSessionDao, userInfoDao)
+                .checkOutActiveSession(System.currentTimeMillis());
     }
 }
