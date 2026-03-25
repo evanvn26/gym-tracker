@@ -14,12 +14,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.group15.gymtracker.domain.AppLocker
+import com.group15.gymtracker.onboarding.SharedPreferencesOnboardingFlagStore
+import com.group15.gymtracker.ui.onboarding.OnboardingActivity
 import com.group15.gymtracker.ui.stats.StatsActivity
 import com.group15.gymtracker.ui.theme.GymTrackerTheme
 import com.group15.gymtracker.workers.MidnightCheckWorker
@@ -27,6 +33,12 @@ import com.group15.gymtracker.workers.MidnightCheckWorker
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!SharedPreferencesOnboardingFlagStore(this).isComplete()) {
+            startActivity(Intent(this, OnboardingActivity::class.java))
+            finish()
+            return
+        }
 
         setContent {
             GymTrackerTheme {

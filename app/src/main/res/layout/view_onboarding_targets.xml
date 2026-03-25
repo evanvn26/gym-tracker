@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_onboarding_panel"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/onboarding_targets_title"
+            android:textColor="@color/onboarding_text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/onboarding_targets_schedule_label"
+            android:textColor="@color/onboarding_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:alignmentMode="alignMargins"
+            android:columnCount="2"
+            android:useDefaultMargins="true">
+
+            <CheckBox
+                android:id="@+id/targetDayMondayCheck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:background="@drawable/bg_onboarding_surface"
+                android:buttonTint="@color/onboarding_accent"
+                android:minHeight="56dp"
+                android:padding="12dp"
+                android:text="@string/day_monday"
+                android:textColor="@color/onboarding_text_primary" />
+
+            <CheckBox
+                android:id="@+id/targetDayTuesdayCheck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:background="@drawable/bg_onboarding_surface"
+                android:buttonTint="@color/onboarding_accent"
+                android:minHeight="56dp"
+                android:padding="12dp"
+                android:text="@string/day_tuesday"
+                android:textColor="@color/onboarding_text_primary" />
+
+            <CheckBox
+                android:id="@+id/targetDayWednesdayCheck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:background="@drawable/bg_onboarding_surface"
+                android:buttonTint="@color/onboarding_accent"
+                android:minHeight="56dp"
+                android:padding="12dp"
+                android:text="@string/day_wednesday"
+                android:textColor="@color/onboarding_text_primary" />
+
+            <CheckBox
+                android:id="@+id/targetDayThursdayCheck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:background="@drawable/bg_onboarding_surface"
+                android:buttonTint="@color/onboarding_accent"
+                android:minHeight="56dp"
+                android:padding="12dp"
+                android:text="@string/day_thursday"
+                android:textColor="@color/onboarding_text_primary" />
+
+            <CheckBox
+                android:id="@+id/targetDayFridayCheck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:background="@drawable/bg_onboarding_surface"
+                android:buttonTint="@color/onboarding_accent"
+                android:minHeight="56dp"
+                android:padding="12dp"
+                android:text="@string/day_friday"
+                android:textColor="@color/onboarding_text_primary" />
+
+            <CheckBox
+                android:id="@+id/targetDaySaturdayCheck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:background="@drawable/bg_onboarding_surface"
+                android:buttonTint="@color/onboarding_accent"
+                android:minHeight="56dp"
+                android:padding="12dp"
+                android:text="@string/day_saturday"
+                android:textColor="@color/onboarding_text_primary" />
+
+            <CheckBox
+                android:id="@+id/targetDaySundayCheck"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:background="@drawable/bg_onboarding_surface"
+                android:buttonTint="@color/onboarding_accent"
+                android:minHeight="56dp"
+                android:padding="12dp"
+                android:text="@string/day_sunday"
+                android:textColor="@color/onboarding_text_primary" />
+        </GridLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/onboarding_targets_duration_label"
+            android:textColor="@color/onboarding_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/targetsDurationValueText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/onboarding_text_secondary"
+            android:textSize="15sp" />
+
+        <SeekBar
+            android:id="@+id/sessionHoursSeekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:max="7"
+            android:progress="1"
+            android:progressTint="@color/onboarding_accent"
+            android:thumbTint="@color/onboarding_accent" />
+    </LinearLayout>
+
+</ScrollView>

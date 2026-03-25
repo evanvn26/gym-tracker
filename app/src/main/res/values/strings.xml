@@ -1,3 +1,36 @@
 <resources>
     <string name="app_name">GymTracker</string>
+    <string name="onboarding_back">Back</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_begin">Begin</string>
+    <string name="onboarding_saving">Saving...</string>
+    <string name="onboarding_save_error">Could not save onboarding details. Please try again.</string>
+    <string name="onboarding_targets_title">Choose your target days</string>
+    <string name="onboarding_targets_schedule_label">Weekly schedule</string>
+    <string name="onboarding_targets_duration_label">Session target</string>
+    <string name="onboarding_blocked_apps_title">Pick the apps you are willing to lose</string>
+    <string name="onboarding_location_title">Set the gym coordinates</string>
+    <string name="onboarding_location_input_latitude_hint">Latitude (for example 51.5007)</string>
+    <string name="onboarding_location_input_longitude_hint">Longitude (for example -0.1246)</string>
+    <string name="onboarding_location_confirm">Confirm location</string>
+    <string name="onboarding_location_confirmed">Confirmed</string>
+    <string name="onboarding_location_selected_label">Entered coordinates</string>
+    <string name="onboarding_location_validation_missing">Enter both latitude and longitude.</string>
+    <string name="onboarding_location_validation_invalid_decimal">Coordinates must be decimal numbers, like 51.5007 and -0.1246.</string>
+    <string name="onboarding_location_validation_latitude_range">Latitude must be between -90 and 90.</string>
+    <string name="onboarding_location_validation_longitude_range">Longitude must be between -180 and 180.</string>
+    <string name="onboarding_complete_location_missing">No coordinates entered</string>
+    <string name="onboarding_complete_location_value">Latitude: %1$.6f\nLongitude: %2$.6f</string>
+    <string name="onboarding_complete_title">You are all set!</string>
+    <string name="onboarding_complete_body">From here the app can start tracking the routine you just defined.</string>
+    <string name="onboarding_complete_targets_label">Weekly target</string>
+    <string name="onboarding_complete_blocked_apps_label">Blocked apps</string>
+    <string name="onboarding_complete_location_label">Check-in location</string>
+    <string name="day_monday">Monday</string>
+    <string name="day_tuesday">Tuesday</string>
+    <string name="day_wednesday">Wednesday</string>
+    <string name="day_thursday">Thursday</string>
+    <string name="day_friday">Friday</string>
+    <string name="day_saturday">Saturday</string>
+    <string name="day_sunday">Sunday</string>
 </resources>

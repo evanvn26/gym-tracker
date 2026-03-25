@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/onboarding_background"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <ProgressBar
+        android:id="@+id/onboardingProgressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:max="4"
+        android:progress="1"
+        android:progressBackgroundTint="@color/onboarding_progress_track"
+        android:progressTint="@color/onboarding_accent" />
+
+    <TextView
+        android:id="@+id/onboardingErrorText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_onboarding_error"
+        android:padding="12dp"
+        android:textColor="@color/onboarding_error"
+        android:visibility="gone" />
+
+    <ViewFlipper
+        android:id="@+id/onboardingViewFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1">
+
+        <include layout="@layout/view_onboarding_targets" />
+        <include layout="@layout/view_onboarding_blocked_apps" />
+        <include layout="@layout/view_onboarding_location" />
+        <include layout="@layout/view_onboarding_complete" />
+    </ViewFlipper>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/onboardingBackButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="@string/onboarding_back"
+            android:textAllCaps="false"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/onboardingNextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@color/onboarding_accent"
+            android:text="@string/onboarding_continue"
+            android:textAllCaps="false"
+            android:textColor="@color/onboarding_button_text" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_onboarding_panel"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/onboarding_location_title"
+            android:textColor="@color/onboarding_text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/locationLatitudeInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_onboarding_input"
+            android:hint="@string/onboarding_location_input_latitude_hint"
+            android:inputType="numberSigned|numberDecimal"
+            android:padding="14dp"
+            android:textColor="@color/onboarding_text_primary"
+            android:textColorHint="@color/onboarding_text_secondary" />
+
+        <EditText
+            android:id="@+id/locationLongitudeInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_onboarding_input"
+            android:hint="@string/onboarding_location_input_longitude_hint"
+            android:inputType="numberSigned|numberDecimal"
+            android:padding="14dp"
+            android:textColor="@color/onboarding_text_primary"
+            android:textColorHint="@color/onboarding_text_secondary" />
+
+        <TextView
+            android:id="@+id/locationStatusText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/onboarding_text_secondary"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/locationSelectedLabelText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/onboarding_location_selected_label"
+            android:textColor="@color/onboarding_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/confirmLocationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/onboarding_location_confirm"
+            android:textAllCaps="false" />
+    </LinearLayout>
+
+</ScrollView>
