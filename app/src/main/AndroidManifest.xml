@@ -31,6 +31,11 @@
             android:launchMode="singleTask"
             android:theme="@style/Theme.GymTracker" />
 
+        <activity
+            android:name=".ui.stats.StatsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GymTracker" />
+
         <service
             android:name=".accessibility.AppBlockAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
