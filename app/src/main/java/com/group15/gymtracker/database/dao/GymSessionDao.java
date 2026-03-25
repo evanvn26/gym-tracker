@@ -28,6 +28,9 @@ public interface GymSessionDao {
     @Query("SELECT * FROM GymSessions ORDER BY session_date DESC LIMIT :limit")
     List<GymSessionEntity> getRecentSessions(int limit);
 
+    @Query("SELECT * FROM GymSessions WHERE session_date BETWEEN :startDate AND :endDate AND check_out_time IS NOT NULL ORDER BY session_date ASC, check_in_time ASC")
+    List<GymSessionEntity> getCompletedSessionsBetween(String startDate, String endDate);
+
     @Query("UPDATE GymSessions SET check_out_time = :checkOutTime WHERE verification_id = :id")
     void updateCheckOutTime(int id, long checkOutTime);
 

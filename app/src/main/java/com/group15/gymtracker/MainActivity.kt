@@ -1,5 +1,6 @@
 package com.group15.gymtracker
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.group15.gymtracker.domain.AppLocker
+import com.group15.gymtracker.ui.stats.StatsActivity
 import com.group15.gymtracker.ui.theme.GymTrackerTheme
 import com.group15.gymtracker.workers.MidnightCheckWorker
 
@@ -41,6 +43,9 @@ class MainActivity : ComponentActivity() {
                         onClearLock = {
                             AppLocker(this).unlockApps()
                             Toast.makeText(this, "Lock state cleared", Toast.LENGTH_SHORT).show()
+                        },
+                        onOpenStats = {
+                            startActivity(Intent(this, StatsActivity::class.java))
                         }
                     )
                 }
@@ -52,7 +57,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun HomeScreen(
     onRunWorker: () -> Unit,
-    onClearLock: () -> Unit
+    onClearLock: () -> Unit,
+    onOpenStats: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -77,6 +83,12 @@ private fun HomeScreen(
             modifier = Modifier.padding(top = 12.dp)
         ) {
             Text("Clear Lock State")
+        }
+        Button(
+            onClick = onOpenStats,
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Text("Open Statistics")
         }
     }
 }

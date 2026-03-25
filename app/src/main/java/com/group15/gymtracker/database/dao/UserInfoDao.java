@@ -20,22 +20,25 @@ public interface UserInfoDao {
     @Query("SELECT * FROM UserInfo LIMIT 1")
     UserInfoEntity getUserInfo();
 
-    @Query("UPDATE UserInfo SET current_streak = :streak WHERE id = 1")
+    @Query("UPDATE UserInfo SET current_streak = :streak WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
     void updateCurrentStreak(int streak);
 
-    @Query("UPDATE UserInfo SET longest_streak = :streak WHERE id = 1")
+    @Query("UPDATE UserInfo SET longest_streak = :streak WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
     void updateLongestStreak(int streak);
 
-    @Query("UPDATE UserInfo SET freeze_tokens = :tokens WHERE id = 1")
+    @Query("UPDATE UserInfo SET freeze_tokens = :tokens WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
     void updateFreezeTokens(int tokens);
 
-    @Query("UPDATE UserInfo SET total_gym_hours = total_gym_hours + :hours WHERE id = 1")
+    @Query("UPDATE UserInfo SET total_gym_hours = total_gym_hours + :hours WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
     void addGymHours(float hours);
 
-    @Query("UPDATE UserInfo SET blocked_apps = :appsJson WHERE id = 1")
+    @Query("UPDATE UserInfo SET total_gym_hours = :hours WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
+    void setTotalGymHours(float hours);
+
+    @Query("UPDATE UserInfo SET blocked_apps = :appsJson WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
     void updateBlockedApps(String appsJson);
 
-    @Query("UPDATE UserInfo SET gym_latitude = :lat, gym_longitude = :lng WHERE id = 1")
+    @Query("UPDATE UserInfo SET gym_latitude = :lat, gym_longitude = :lng WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
     void updateGymLocation(double lat, double lng);
 
     @Query("SELECT blocked_apps FROM UserInfo LIMIT 1")

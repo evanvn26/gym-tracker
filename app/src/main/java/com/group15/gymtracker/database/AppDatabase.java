@@ -20,7 +20,8 @@ import com.group15.gymtracker.database.entities.UserInfoEntity;
                 DailyTargetEntity.class,
                 GymSessionEntity.class
         },
-        version = 1,
+        // Bump the version to reset development data before the app ships.
+        version = 2,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
