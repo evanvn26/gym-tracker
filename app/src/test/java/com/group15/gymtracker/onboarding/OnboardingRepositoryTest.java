@@ -87,15 +87,12 @@ public class OnboardingRepositoryTest {
     }
 
     @Test
-    public void isLocationStepComplete_requiresSelectedCoordinatesAndConfirmation() {
+    public void isLocationStepComplete_requiresSelectedCoordinatesOnly() {
         OnboardingUiState uiState = new OnboardingUiState();
 
         assertTrue(!OnboardingUtils.isLocationStepComplete(uiState));
 
         uiState.setSelectedGymCoordinates(new SelectedGymCoordinates(51.5, -0.1));
-        assertTrue(!OnboardingUtils.isLocationStepComplete(uiState));
-
-        uiState.setLocationConfirmed(true);
         assertTrue(OnboardingUtils.isLocationStepComplete(uiState));
     }
 

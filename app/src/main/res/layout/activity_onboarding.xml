@@ -4,33 +4,36 @@
     android:layout_height="match_parent"
     android:background="@color/onboarding_background"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:paddingStart="20dp"
+    android:paddingTop="24dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="20dp">
 
     <ProgressBar
         android:id="@+id/onboardingProgressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="12dp"
+        android:layout_height="6dp"
         android:max="4"
         android:progress="1"
-        android:progressBackgroundTint="@color/onboarding_progress_track"
-        android:progressTint="@color/onboarding_accent" />
+        android:progressDrawable="@drawable/bg_onboarding_progress" />
 
     <TextView
         android:id="@+id/onboardingErrorText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:background="@drawable/bg_onboarding_error"
-        android:padding="12dp"
+        android:padding="14dp"
         android:textColor="@color/onboarding_error"
+        android:textSize="14sp"
         android:visibility="gone" />
 
     <ViewFlipper
         android:id="@+id/onboardingViewFlipper"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:layout_weight="1">
 
         <include layout="@layout/view_onboarding_targets" />
@@ -43,27 +46,36 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:orientation="horizontal">
+        android:background="@drawable/bg_onboarding_header"
+        android:elevation="2dp"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
         <Button
             android:id="@+id/onboardingBackButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
+            android:layout_height="56dp"
+            android:layout_marginEnd="10dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_onboarding_button_secondary"
             android:text="@string/onboarding_back"
             android:textAllCaps="false"
+            android:textColor="@color/onboarding_button_text_secondary"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:visibility="gone" />
 
         <Button
             android:id="@+id/onboardingNextButton"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:layout_weight="1"
-            android:backgroundTint="@color/onboarding_accent"
+            android:background="@drawable/bg_onboarding_button_primary"
             android:text="@string/onboarding_continue"
             android:textAllCaps="false"
-            android:textColor="@color/onboarding_button_text" />
+            android:textColor="@color/onboarding_button_text"
+            android:textSize="16sp"
+            android:textStyle="bold" />
     </LinearLayout>
 
 </LinearLayout>

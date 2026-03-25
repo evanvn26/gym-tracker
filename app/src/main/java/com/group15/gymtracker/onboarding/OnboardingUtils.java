@@ -123,7 +123,7 @@ public final class OnboardingUtils {
     }
 
     public static boolean isLocationStepComplete(OnboardingUiState uiState) {
-        return uiState.getSelectedGymCoordinates() != null && uiState.isLocationConfirmed();
+        return uiState.getSelectedGymCoordinates() != null;
     }
 
     public static CoordinateValidationError validateGymCoordinates(String latitudeText, String longitudeText) {

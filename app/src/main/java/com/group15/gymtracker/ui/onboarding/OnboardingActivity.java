@@ -83,7 +83,6 @@ public class OnboardingActivity extends ComponentActivity {
     private EditText locationLongitudeInput;
     private TextView locationStatusText;
     private TextView locationSelectedLabelText;
-    private Button confirmLocationButton;
     private TextView completeTargetsSummaryText;
     private TextView completeBlockedAppsSummaryText;
     private TextView completeLocationSummaryText;
@@ -163,7 +162,6 @@ public class OnboardingActivity extends ComponentActivity {
         locationLongitudeInput = findViewById(R.id.locationLongitudeInput);
         locationStatusText = findViewById(R.id.locationStatusText);
         locationSelectedLabelText = findViewById(R.id.locationSelectedLabelText);
-        confirmLocationButton = findViewById(R.id.confirmLocationButton);
         completeTargetsSummaryText = findViewById(R.id.completeTargetsSummaryText);
         completeBlockedAppsSummaryText = findViewById(R.id.completeBlockedAppsSummaryText);
         completeLocationSummaryText = findViewById(R.id.completeLocationSummaryText);
@@ -266,17 +264,6 @@ public class OnboardingActivity extends ComponentActivity {
     private void bindListeners() {
         onboardingBackButton.setOnClickListener(view -> showPreviousStep());
         onboardingNextButton.setOnClickListener(view -> handleNextAction());
-        confirmLocationButton.setOnClickListener(view -> {
-            if (uiState.getSelectedGymCoordinates() == null) {
-                return;
-            }
-            uiState.setLocationConfirmed(true);
-            locationErrorMessage = null;
-            clearGlobalError();
-            renderLocationSection();
-            renderCompletionSection();
-            updateNavigation();
-        });
 
         TextWatcher coordinateWatcher = new TextWatcher() {
             @Override
@@ -420,22 +407,30 @@ public class OnboardingActivity extends ComponentActivity {
 
     private void renderLocationSection() {
         SelectedGymCoordinates coordinates = uiState.getSelectedGymCoordinates();
-        confirmLocationButton.setText(
-                coordinates != null && uiState.isLocationConfirmed()
-                        ? R.string.onboarding_location_confirmed
-                        : R.string.onboarding_location_confirm
-        );
         locationLatitudeInput.setEnabled(!saveInFlight);
         locationLongitudeInput.setEnabled(!saveInFlight);
-        confirmLocationButton.setEnabled(coordinates != null && !saveInFlight);
         locationSelectedLabelText.setVisibility(coordinates != null ? View.VISIBLE : View.GONE);
+        if (coordinates != null) {
+            locationSelectedLabelText.setText(
+                    buildSummaryCardText(
+                            getString(R.string.onboarding_location_selected_label),
+                            getString(
+                                    R.string.onboarding_location_selected_value,
+                                    coordinates.latitude(),
+                                    coordinates.longitude()
+                            )
+                    )
+            );
+        }
 
         if (locationErrorMessage != null) {
             locationStatusText.setVisibility(View.VISIBLE);
             locationStatusText.setText(locationErrorMessage);
             locationStatusText.setTextColor(getColor(R.color.onboarding_error));
         } else {
-            locationStatusText.setVisibility(View.GONE);
+            locationStatusText.setVisibility(View.VISIBLE);
+            locationStatusText.setText(R.string.onboarding_location_helper);
+            locationStatusText.setTextColor(getColor(R.color.onboarding_text_secondary));
         }
     }
 
@@ -499,10 +494,6 @@ public class OnboardingActivity extends ComponentActivity {
 
     private void handleCoordinateInputsChanged() {
         clearGlobalError();
-
-        if (uiState.getSelectedGymCoordinates() != null) {
-            uiState.setLocationConfirmed(false);
-        }
 
         String latitudeText = locationLatitudeInput.getText().toString();
         String longitudeText = locationLongitudeInput.getText().toString();
