@@ -1,3 +1,4 @@
+// Generated with Codex to create tests quickly for the new features we implemented.
 package com.group15.gymtracker.ui.main;
 
 import static org.junit.Assert.assertEquals;

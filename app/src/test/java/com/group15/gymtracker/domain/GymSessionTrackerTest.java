@@ -1,6 +1,5 @@
+// Generated with Codex to create tests quickly for the new features we implemented.
 package com.group15.gymtracker.domain;
-
-// Generated with Codex assistance to speed up test coverage work.
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
