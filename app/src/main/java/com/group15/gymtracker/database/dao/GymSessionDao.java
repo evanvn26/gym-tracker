@@ -42,4 +42,7 @@ public interface GymSessionDao {
 
     @Query("SELECT COUNT(*) FROM GymSessions WHERE session_date BETWEEN :startDate AND :endDate")
     int getSessionCountInRange(String startDate, String endDate);
+
+    @Query("SELECT COALESCE(SUM((check_out_time - check_in_time) / 60000), 0) FROM GymSessions WHERE session_date = :date AND check_out_time IS NOT NULL")
+    int getTotalCompletedMinutesForDate(String date);
 }

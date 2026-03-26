@@ -9,9 +9,11 @@ import androidx.work.WorkerParameters;
 
 import com.group15.gymtracker.database.AppDatabase;
 import com.group15.gymtracker.database.entities.DailyTargetEntity;
+import com.group15.gymtracker.database.entities.UserInfoEntity;
 import com.group15.gymtracker.database.dao.UserInfoDao;
 import com.group15.gymtracker.domain.AppLocker;
 import com.group15.gymtracker.domain.StreakTracker;
+import com.group15.gymtracker.domain.UserInfoStore;
 import com.group15.gymtracker.onboarding.OnboardingUtils;
 
 import java.text.SimpleDateFormat;
@@ -23,7 +25,7 @@ import java.util.Set;
 public class MidnightCheckWorker extends Worker {
 
     private static final String TAG = "MidnightCheckWorker";
-    private static final boolean FORCE_TEST_LOCK = true;
+    private static final boolean FORCE_TEST_LOCK = false;
 
     public MidnightCheckWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -50,9 +52,11 @@ public class MidnightCheckWorker extends Worker {
         boolean isGymDay = false;
         boolean targetMet = false;
         Set<String> blockedPackages = Collections.emptySet();
+        StreakTracker.State oldState = new StreakTracker.State(0, 0, 0);
 
         try {
             AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            UserInfoDao userInfoDao = db.userInfoDao();
 
             DailyTargetEntity target = db.dailyTargetDao().getTargetForDay(yesterdayDay);
             if (target == null) {
@@ -60,9 +64,18 @@ public class MidnightCheckWorker extends Worker {
             } else {
                 Log.d(TAG, "Target minutes = " + target.targetMinutes);
                 isGymDay = target.targetMinutes > 0;
+
+                if (isGymDay) {
+                    int totalMinutes = db.gymSessionDao().getTotalCompletedMinutesForDate(yesterdayDate);
+                    targetMet = totalMinutes >= target.targetMinutes;
+                    Log.d(TAG, "Total session minutes = " + totalMinutes + ", targetMet = " + targetMet);
+                }
             }
 
-            blockedPackages = readBlockedPackages(db.userInfoDao());
+            UserInfoEntity userInfo = UserInfoStore.getOrCreate(userInfoDao);
+            oldState = new StreakTracker.State(userInfo.currentStreak, userInfo.longestStreak, userInfo.freezeTokens);
+
+            blockedPackages = readBlockedPackages(userInfoDao);
         } catch (Exception e) {
             Log.e(TAG, "Database read failed", e);
             return Result.failure();
@@ -74,9 +87,18 @@ public class MidnightCheckWorker extends Worker {
             Log.d(TAG, "FORCE_TEST_LOCK enabled");
         }
 
-        StreakTracker.State oldState = new StreakTracker.State(3, 5, 0);
         StreakTracker tracker = new StreakTracker();
         StreakTracker.Result result = tracker.evaluate(isGymDay, targetMet, oldState);
+
+        try {
+            AppDatabase db = AppDatabase.getInstance(getApplicationContext());
+            UserInfoDao userInfoDao = db.userInfoDao();
+            userInfoDao.updateCurrentStreak(result.newState.currentStreak);
+            userInfoDao.updateLongestStreak(result.newState.longestStreak);
+            userInfoDao.updateFreezeTokens(result.newState.freezeTokens);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to persist streak state", e);
+        }
 
         AppLocker locker = new AppLocker(getApplicationContext());
         if (result.shouldUnlock) {

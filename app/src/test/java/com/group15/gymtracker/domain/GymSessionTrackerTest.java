@@ -6,10 +6,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.group15.gymtracker.database.dao.DailyTargetDao;
 import com.group15.gymtracker.database.dao.GymSessionDao;
 import com.group15.gymtracker.database.dao.UserInfoDao;
-import com.group15.gymtracker.database.entities.DailyTargetEntity;
 import com.group15.gymtracker.database.entities.GymSessionEntity;
 import com.group15.gymtracker.database.entities.UserInfoEntity;
 
@@ -107,6 +105,11 @@ public class GymSessionTrackerTest {
         public int getSessionCountInRange(String startDate, String endDate) {
             return 0;
         }
+
+        @Override
+        public int getTotalCompletedMinutesForDate(String date) {
+            return 0;
+        }
     }
 
     private static class TrackingUserInfoDao implements UserInfoDao {
@@ -180,37 +183,4 @@ public class GymSessionTrackerTest {
         }
     }
 
-    private static class NoOpDailyTargetDao implements DailyTargetDao {
-        @Override
-        public void insert(DailyTargetEntity dailyTarget) {
-        }
-
-        @Override
-        public void update(DailyTargetEntity dailyTarget) {
-        }
-
-        @Override
-        public List<DailyTargetEntity> getAllTargets() {
-            return new ArrayList<>();
-        }
-
-        @Override
-        public DailyTargetEntity getTargetForDay(String day) {
-            return null;
-        }
-
-        @Override
-        public void updateTargetMinutes(String day, int minutes) {
-        }
-
-        @Override
-        public int getTargetMinutes(String day) {
-            return 0;
-        }
-
-        @Override
-        public List<DailyTargetEntity> getGymDays() {
-            return new ArrayList<>();
-        }
-    }
 }

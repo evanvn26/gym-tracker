@@ -44,6 +44,11 @@ public class AppLocker {
 
     public boolean shouldBlock(String packageName) {
         if (!isLocked()) return false;
+        long unlockAt = getUnlockAtMillis();
+        if (unlockAt > 0 && System.currentTimeMillis() >= unlockAt) {
+            unlockApps();
+            return false;
+        }
         Set<String> blocked = prefs.getStringSet(KEY_BLOCKED_PACKAGES, Collections.emptySet());
         return blocked.contains(packageName);
     }

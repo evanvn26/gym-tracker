@@ -2,6 +2,8 @@ package com.group15.gymtracker.accessibility;
 
 import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.SystemClock;
 import android.view.accessibility.AccessibilityEvent;
 
@@ -22,7 +24,7 @@ public class AppBlockAccessibilityService extends AccessibilityService {
 
         if (packageName.equals(getPackageName())) return;
         if (packageName.equals("com.android.systemui")) return;
-        if (packageName.equals("com.google.android.apps.nexuslauncher")) return;
+        if (packageName.equals(getDefaultLauncherPackage())) return;
 
         AppLocker locker = new AppLocker(this);
         if (!locker.shouldBlock(packageName)) return;
@@ -41,6 +43,13 @@ public class AppBlockAccessibilityService extends AccessibilityService {
                 | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra("blocked_package", packageName);
         startActivity(intent);
+    }
+
+    private String getDefaultLauncherPackage() {
+        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+        homeIntent.addCategory(Intent.CATEGORY_HOME);
+        ResolveInfo info = getPackageManager().resolveActivity(homeIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        return info != null ? info.activityInfo.packageName : null;
     }
 
     @Override

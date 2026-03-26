@@ -191,6 +191,18 @@ public class StatsCalculatorTest {
         public int getSessionCountInRange(String startDate, String endDate) {
             return getCompletedSessionsBetween(startDate, endDate).size();
         }
+
+        @Override
+        public int getTotalCompletedMinutesForDate(String date) {
+            int total = 0;
+            for (GymSessionEntity session : sessions) {
+                if (session.checkOutTime == null || !date.equals(session.sessionDate)) {
+                    continue;
+                }
+                total += session.getDurationMinutes();
+            }
+            return total;
+        }
     }
 
     private static class InMemoryDailyTargetDao implements DailyTargetDao {
