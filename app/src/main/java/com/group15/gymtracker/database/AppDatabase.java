@@ -21,7 +21,7 @@ import com.group15.gymtracker.database.entities.UserInfoEntity;
                 GymSessionEntity.class
         },
         // Bump the version to reset development data before the app ships.
-        version = 2,
+        version = 3,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
