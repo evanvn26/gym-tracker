@@ -51,6 +51,8 @@ import java.util.concurrent.Executors;
  */
 public class OnboardingActivity extends ComponentActivity {
 
+    public static final String EXTRA_START_STEP = "extra_start_step";
+
     private static final String STATE_STEP = "state_step";
     private static final String STATE_SELECTED_DAYS = "state_selected_days";
     private static final String STATE_SESSION_HOURS = "state_session_hours";
@@ -90,6 +92,7 @@ public class OnboardingActivity extends ComponentActivity {
     private boolean bindingViews;
     private boolean bindingCoordinateInputs;
     private boolean saveInFlight;
+    private boolean preloadInFlight;
     private String locationErrorMessage;
 
     @Override
@@ -109,11 +112,16 @@ public class OnboardingActivity extends ComponentActivity {
         bindBlockedAppViews();
         bindListeners();
         restoreState(savedInstanceState);
-        renderAll();
+        if (!preloadInFlight) {
+            renderAll();
+        }
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                if (preloadInFlight) {
+                    return;
+                }
                 if (currentStep == OnboardingStep.TARGETS) {
                     finish();
                     return;
@@ -287,7 +295,13 @@ public class OnboardingActivity extends ComponentActivity {
     }
 
     private void restoreState(Bundle savedInstanceState) {
+        OnboardingStep requestedStartStep = resolveRequestedStartStep();
+
         if (savedInstanceState == null) {
+            currentStep = requestedStartStep;
+            if (new SharedPreferencesOnboardingFlagStore(getApplicationContext()).isComplete()) {
+                loadExistingStateAsync(requestedStartStep);
+            }
             return;
         }
 
@@ -319,6 +333,70 @@ public class OnboardingActivity extends ComponentActivity {
 
         setCoordinateInputText(locationLatitudeInput, savedInstanceState.getString(STATE_COORDINATE_LATITUDE_TEXT, ""));
         setCoordinateInputText(locationLongitudeInput, savedInstanceState.getString(STATE_COORDINATE_LONGITUDE_TEXT, ""));
+    }
+
+    private OnboardingStep resolveRequestedStartStep() {
+        String stepName = getIntent().getStringExtra(EXTRA_START_STEP);
+        if (stepName == null) {
+            return OnboardingStep.TARGETS;
+        }
+        try {
+            return OnboardingStep.valueOf(stepName);
+        } catch (IllegalArgumentException exception) {
+            return OnboardingStep.TARGETS;
+        }
+    }
+
+    private void loadExistingStateAsync(OnboardingStep startStep) {
+        preloadInFlight = true;
+        currentStep = startStep;
+        onboardingViewFlipper.setVisibility(View.INVISIBLE);
+        showGlobalMessage(getString(R.string.onboarding_loading_existing_state), false);
+        renderHeader();
+        updateNavigation();
+
+        executor.execute(() -> {
+            try {
+                OnboardingUiState storedState = repository.loadExistingState();
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+                    applyExistingOnboardingState(storedState);
+                    preloadInFlight = false;
+                    clearGlobalError();
+                    onboardingViewFlipper.setVisibility(View.VISIBLE);
+                    renderAll();
+                    showStep(startStep);
+                });
+            } catch (Exception exception) {
+                runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) {
+                        return;
+                    }
+                    preloadInFlight = false;
+                    onboardingViewFlipper.setVisibility(View.VISIBLE);
+                    showGlobalMessage(getString(R.string.onboarding_load_existing_error), true);
+                    renderAll();
+                    showStep(startStep);
+                });
+            }
+        });
+    }
+
+    private void applyExistingOnboardingState(OnboardingUiState storedState) {
+        uiState.setSelectedDays(storedState.getSelectedDays());
+        uiState.setSessionHours(storedState.getSessionHours());
+        uiState.setBlockedPackages(storedState.getBlockedPackages());
+        uiState.setSelectedGymCoordinates(storedState.getSelectedGymCoordinates());
+        uiState.setLocationConfirmed(storedState.isLocationConfirmed());
+        locationErrorMessage = null;
+
+        SelectedGymCoordinates coordinates = storedState.getSelectedGymCoordinates();
+        if (coordinates != null) {
+            setCoordinateInputText(locationLatitudeInput, String.valueOf(coordinates.latitude()));
+            setCoordinateInputText(locationLongitudeInput, String.valueOf(coordinates.longitude()));
+        }
     }
 
     private void handleNextAction() {
@@ -462,8 +540,8 @@ public class OnboardingActivity extends ComponentActivity {
 
     private void updateNavigation() {
         onboardingBackButton.setVisibility(currentStep == OnboardingStep.TARGETS ? View.GONE : View.VISIBLE);
-        onboardingBackButton.setEnabled(!saveInFlight);
-        onboardingNextButton.setEnabled(canMoveForward() && !saveInFlight);
+        onboardingBackButton.setEnabled(!saveInFlight && !preloadInFlight);
+        onboardingNextButton.setEnabled(canMoveForward() && !saveInFlight && !preloadInFlight);
         onboardingNextButton.setText(getNextButtonText());
     }
 
@@ -483,6 +561,9 @@ public class OnboardingActivity extends ComponentActivity {
     }
 
     private CharSequence getNextButtonText() {
+        if (preloadInFlight) {
+            return getString(R.string.onboarding_loading_existing_state);
+        }
         if (currentStep == OnboardingStep.COMPLETE) {
             if (saveInFlight) {
                 return getString(R.string.onboarding_saving);
@@ -559,6 +640,16 @@ public class OnboardingActivity extends ComponentActivity {
     }
 
     private void showGlobalError(String message) {
+        showGlobalMessage(message, true);
+    }
+
+    private void showGlobalMessage(String message, boolean isError) {
+        onboardingErrorText.setBackgroundResource(
+                isError ? R.drawable.bg_onboarding_error : R.drawable.bg_onboarding_surface_alt
+        );
+        onboardingErrorText.setTextColor(getColor(
+                isError ? R.color.onboarding_error : R.color.onboarding_text_secondary
+        ));
         onboardingErrorText.setText(message);
         onboardingErrorText.setVisibility(View.VISIBLE);
     }
