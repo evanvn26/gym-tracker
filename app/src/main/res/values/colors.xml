@@ -23,4 +23,11 @@
     <color name="onboarding_button_disabled">#FFD0D5DD</color>
     <color name="onboarding_error">#FFD92D20</color>
     <color name="onboarding_error_soft">#FFFEF3F2</color>
+    <color name="dashboard_success">#FF12B76A</color>
+    <color name="dashboard_success_soft">#FFEAFBF2</color>
+    <color name="dashboard_warning">#FFF79009</color>
+    <color name="dashboard_warning_soft">#FFFFF4E5</color>
+    <color name="dashboard_info_soft">#FFEAF3FF</color>
+    <color name="dashboard_chart_bar">#FF0A84FF</color>
+    <color name="dashboard_chart_track">#FFDCE6F5</color>
 </resources>
