@@ -7,6 +7,7 @@ import com.group15.gymtracker.database.entities.DailyTargetEntity;
 import com.group15.gymtracker.database.entities.GymSessionEntity;
 import com.group15.gymtracker.domain.StatsCalculator;
 import com.group15.gymtracker.domain.StatsSummary;
+import com.group15.gymtracker.domain.UserInfoStore;
 import com.group15.gymtracker.domain.dashboard.DashboardActiveSession;
 import com.group15.gymtracker.domain.dashboard.DashboardChartBar;
 import com.group15.gymtracker.domain.dashboard.DashboardLockStatus;
@@ -24,6 +25,12 @@ import java.util.Locale;
 import java.util.Set;
 
 public final class MainDashboardRepository {
+
+    public enum FreezeTokenUnlockResult {
+        SUCCESS,
+        NOT_LOCKED,
+        NO_TOKENS
+    }
 
     private final GymSessionDao gymSessionDao;
     private final DailyTargetDao dailyTargetDao;
@@ -100,6 +107,21 @@ public final class MainDashboardRepository {
                 accessibilityEnabled,
                 userInfoDao.getFreezeTokens()
         );
+    }
+
+    public FreezeTokenUnlockResult useFreezeTokenToUnlock() {
+        if (!lockStateSource.isLocked()) {
+            return FreezeTokenUnlockResult.NOT_LOCKED;
+        }
+
+        int freezeTokens = UserInfoStore.getOrCreate(userInfoDao).freezeTokens;
+        if (freezeTokens <= 0) {
+            return FreezeTokenUnlockResult.NO_TOKENS;
+        }
+
+        userInfoDao.updateFreezeTokens(freezeTokens - 1);
+        lockStateSource.unlockApps();
+        return FreezeTokenUnlockResult.SUCCESS;
     }
 
     private WeeklyGoalProgress buildWeeklyGoalProgress(GymSessionEntity activeSessionEntity, Calendar now) {

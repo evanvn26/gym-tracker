@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
@@ -108,6 +109,7 @@ public class MainActivity extends ComponentActivity {
     private TextView blockingCountText;
     private TextView blockingReasonText;
     private TextView blockingUnlockText;
+    private Button useFreezeTokenButton;
     private Button openAccessibilityButton;
     private TextView monthProgressText;
     private TextView totalHoursValueText;
@@ -205,6 +207,7 @@ public class MainActivity extends ComponentActivity {
         blockingCountText = findViewById(R.id.blockingCountText);
         blockingReasonText = findViewById(R.id.blockingReasonText);
         blockingUnlockText = findViewById(R.id.blockingUnlockText);
+        useFreezeTokenButton = findViewById(R.id.useFreezeTokenButton);
         openAccessibilityButton = findViewById(R.id.openAccessibilityButton);
         monthProgressText = findViewById(R.id.monthProgressText);
         totalHoursValueText = findViewById(R.id.totalHoursValueText);
@@ -221,6 +224,7 @@ public class MainActivity extends ComponentActivity {
     private void bindListeners() {
         sessionPrimaryButton.setOnClickListener(view -> onPrimarySessionAction());
         sessionSecondaryButton.setOnClickListener(view -> onCheckOutClicked());
+        useFreezeTokenButton.setOnClickListener(view -> onUseFreezeTokenClicked());
         openAccessibilityButton.setOnClickListener(view ->
                 startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         );
@@ -347,10 +351,13 @@ public class MainActivity extends ComponentActivity {
 
     private void renderBlocking(DashboardSnapshot snapshot) {
         DashboardLockStatus lockStatus = snapshot.lockStatus();
+        boolean canUseFreezeToken = lockStatus.state() == DashboardLockStatus.State.LOCKED
+                && snapshot.freezeTokens() > 0;
         blockingSummaryText.setText(lockStatus.summary());
         blockingCountText.setText(getString(R.string.dashboard_blocking_count, snapshot.blockedAppCount()));
         blockingReasonText.setVisibility(View.GONE);
         blockingUnlockText.setVisibility(View.GONE);
+        useFreezeTokenButton.setEnabled(canUseFreezeToken);
 
         switch (lockStatus.state()) {
             case LOCKED:
@@ -630,6 +637,34 @@ public class MainActivity extends ComponentActivity {
                 }
             });
         });
+    }
+
+    private void onUseFreezeTokenClicked() {
+        useFreezeTokenButton.setEnabled(false);
+
+        executor.execute(() -> {
+            MainDashboardRepository.FreezeTokenUnlockResult result =
+                    dashboardRepository.useFreezeTokenToUnlock();
+            runOnUiThread(() -> handleFreezeTokenUnlockResult(result));
+        });
+    }
+
+    private void handleFreezeTokenUnlockResult(MainDashboardRepository.FreezeTokenUnlockResult result) {
+        int messageResId;
+        switch (result) {
+            case SUCCESS:
+                messageResId = R.string.dashboard_freeze_token_unlock_success;
+                break;
+            case NO_TOKENS:
+                messageResId = R.string.dashboard_freeze_token_unlock_no_tokens;
+                break;
+            default:
+                messageResId = R.string.dashboard_freeze_token_unlock_not_locked;
+                break;
+        }
+
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+        loadDashboard();
     }
 
     private void openOnboardingStep(OnboardingStep step) {

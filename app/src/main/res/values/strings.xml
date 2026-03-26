@@ -33,7 +33,6 @@
     <string name="onboarding_complete_location_label">Check-in location</string>
     <string name="dashboard_loading">Loading your dashboard...</string>
     <string name="dashboard_load_error">Unable to load your dashboard.</string>
-    <string name="dashboard_hero_title">Keep your promise to yourself.</string>
     <string name="dashboard_session_title">Gym session</string>
     <string name="dashboard_goals_title">Goal progress</string>
     <string name="dashboard_blocking_title">App blocking</string>
@@ -42,6 +41,7 @@
     <string name="dashboard_manage_title">Manage setup</string>
     <string name="dashboard_check_in">Check in at gym</string>
     <string name="dashboard_check_out">Check out</string>
+    <string name="dashboard_use_freeze_token">Use a freeze token</string>
     <string name="dashboard_open_accessibility">Open Accessibility Settings</string>
     <string name="dashboard_edit_targets">Edit targets</string>
     <string name="dashboard_edit_blocked_apps">Edit blocked apps</string>
@@ -76,6 +76,9 @@
     <string name="dashboard_session_checking_out">Checking you out...</string>
     <string name="dashboard_lock_reason">Reason: %1$s</string>
     <string name="dashboard_lock_unlocks">Unlocks at %1$s</string>
+    <string name="dashboard_freeze_token_unlock_success">Freeze token used. Blocked apps are unlocked.</string>
+    <string name="dashboard_freeze_token_unlock_not_locked">App blocking is not active right now.</string>
+    <string name="dashboard_freeze_token_unlock_no_tokens">You do not have any freeze tokens available.</string>
     <string name="dashboard_history_duration">%1$d min</string>
     <string name="dashboard_manage_body">Update the targets, blocked apps, and saved gym coordinates that power the dashboard.</string>
     <string name="day_monday">Monday</string>

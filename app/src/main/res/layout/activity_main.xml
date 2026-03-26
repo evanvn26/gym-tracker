@@ -30,43 +30,35 @@
             android:id="@+id/heroCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@drawable/bg_onboarding_header"
-            android:elevation="2dp"
+            android:layout_marginTop="10dp"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="2dp">
 
             <TextView
                 android:id="@+id/heroDateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/onboarding_text_secondary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/heroTitleText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/dashboard_hero_title"
-                android:textColor="@color/onboarding_text_primary"
-                android:textSize="30sp"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/heroTargetSummaryText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textColor="@color/onboarding_text_secondary"
-                android:textSize="16sp" />
+                android:layout_marginTop="8dp"
+                android:textColor="@color/onboarding_text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/heroStatusChipText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="10dp"
                 android:paddingHorizontal="14dp"
                 android:paddingVertical="8dp"
                 android:textColor="@color/onboarding_text_primary"
@@ -354,10 +346,22 @@
                 android:visibility="gone" />
 
             <Button
-                android:id="@+id/openAccessibilityButton"
+                android:id="@+id/useFreezeTokenButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="16dp"
+                android:background="@drawable/bg_onboarding_button_secondary"
+                android:text="@string/dashboard_use_freeze_token"
+                android:textAllCaps="false"
+                android:textColor="@color/dashboard_secondary_button_text"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/openAccessibilityButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/bg_onboarding_button_secondary"
                 android:text="@string/dashboard_open_accessibility"
                 android:textAllCaps="false"

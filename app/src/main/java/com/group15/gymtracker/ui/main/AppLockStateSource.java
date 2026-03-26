@@ -33,4 +33,9 @@ public final class AppLockStateSource implements LockStateSource {
     public long getUnlockAtMillis() {
         return locker.getUnlockAtMillis();
     }
+
+    @Override
+    public void unlockApps() {
+        locker.unlockApps();
+    }
 }

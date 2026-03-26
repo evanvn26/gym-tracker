@@ -1,8 +1,10 @@
 package com.group15.gymtracker.ui.main;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.group15.gymtracker.database.dao.DailyTargetDao;
 import com.group15.gymtracker.database.dao.GymSessionDao;
@@ -122,6 +124,71 @@ public class MainDashboardRepositoryTest {
         assertEquals(2, snapshot.blockedAppCount());
     }
 
+    @Test
+    public void useFreezeTokenToUnlock_unlocksAppsAndConsumesToken() {
+        InMemoryGymSessionDao gymSessionDao = new InMemoryGymSessionDao();
+        InMemoryDailyTargetDao dailyTargetDao = new InMemoryDailyTargetDao();
+        InMemoryUserInfoDao userInfoDao = new InMemoryUserInfoDao();
+        userInfoDao.userInfo.freezeTokens = 2;
+        FakeLockStateSource lockStateSource = new FakeLockStateSource(true, true, "Missed gym day", 99L);
+
+        MainDashboardRepository.FreezeTokenUnlockResult result = new MainDashboardRepository(
+                gymSessionDao,
+                dailyTargetDao,
+                userInfoDao,
+                lockStateSource,
+                buildMillis(2026, Calendar.MARCH, 26, 12, 0)
+        ).useFreezeTokenToUnlock();
+
+        assertEquals(MainDashboardRepository.FreezeTokenUnlockResult.SUCCESS, result);
+        assertEquals(1, userInfoDao.userInfo.freezeTokens);
+        assertTrue(lockStateSource.unlockCalled);
+        assertFalse(lockStateSource.locked);
+    }
+
+    @Test
+    public void useFreezeTokenToUnlock_returnsNoTokensWhenNoneAvailable() {
+        InMemoryGymSessionDao gymSessionDao = new InMemoryGymSessionDao();
+        InMemoryDailyTargetDao dailyTargetDao = new InMemoryDailyTargetDao();
+        InMemoryUserInfoDao userInfoDao = new InMemoryUserInfoDao();
+        userInfoDao.userInfo.freezeTokens = 0;
+        FakeLockStateSource lockStateSource = new FakeLockStateSource(true, true, "Missed gym day", 99L);
+
+        MainDashboardRepository.FreezeTokenUnlockResult result = new MainDashboardRepository(
+                gymSessionDao,
+                dailyTargetDao,
+                userInfoDao,
+                lockStateSource,
+                buildMillis(2026, Calendar.MARCH, 26, 12, 0)
+        ).useFreezeTokenToUnlock();
+
+        assertEquals(MainDashboardRepository.FreezeTokenUnlockResult.NO_TOKENS, result);
+        assertEquals(0, userInfoDao.userInfo.freezeTokens);
+        assertFalse(lockStateSource.unlockCalled);
+        assertTrue(lockStateSource.locked);
+    }
+
+    @Test
+    public void useFreezeTokenToUnlock_returnsNotLockedWhenBlockingInactive() {
+        InMemoryGymSessionDao gymSessionDao = new InMemoryGymSessionDao();
+        InMemoryDailyTargetDao dailyTargetDao = new InMemoryDailyTargetDao();
+        InMemoryUserInfoDao userInfoDao = new InMemoryUserInfoDao();
+        userInfoDao.userInfo.freezeTokens = 2;
+        FakeLockStateSource lockStateSource = new FakeLockStateSource(true, false, "", 0L);
+
+        MainDashboardRepository.FreezeTokenUnlockResult result = new MainDashboardRepository(
+                gymSessionDao,
+                dailyTargetDao,
+                userInfoDao,
+                lockStateSource,
+                buildMillis(2026, Calendar.MARCH, 26, 12, 0)
+        ).useFreezeTokenToUnlock();
+
+        assertEquals(MainDashboardRepository.FreezeTokenUnlockResult.NOT_LOCKED, result);
+        assertEquals(2, userInfoDao.userInfo.freezeTokens);
+        assertFalse(lockStateSource.unlockCalled);
+    }
+
     private static long buildMillis(int year, int month, int day, int hour, int minute) {
         Calendar calendar = Calendar.getInstance(Locale.UK);
         calendar.clear();
@@ -156,9 +223,10 @@ public class MainDashboardRepositoryTest {
 
     private static final class FakeLockStateSource implements LockStateSource {
         private final boolean accessibilityEnabled;
-        private final boolean locked;
+        private boolean locked;
         private final String reason;
         private final long unlockAtMillis;
+        private boolean unlockCalled;
 
         private FakeLockStateSource(boolean accessibilityEnabled, boolean locked, String reason, long unlockAtMillis) {
             this.accessibilityEnabled = accessibilityEnabled;
@@ -185,6 +253,12 @@ public class MainDashboardRepositoryTest {
         @Override
         public long getUnlockAtMillis() {
             return unlockAtMillis;
+        }
+
+        @Override
+        public void unlockApps() {
+            unlockCalled = true;
+            locked = false;
         }
     }
 

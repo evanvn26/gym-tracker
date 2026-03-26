@@ -5,4 +5,5 @@ public interface LockStateSource {
     boolean isLocked();
     String getReason();
     long getUnlockAtMillis();
+    void unlockApps();
 }
