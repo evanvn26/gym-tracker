@@ -30,6 +30,7 @@ public final class OnboardingRepository {
         UserInfoEntity userInfo = UserInfoStore.getOrCreate(userInfoDao);
 
         userInfo.blockedApps = OnboardingUtils.serializeBlockedPackages(uiState.getBlockedPackages());
+        userInfo.gymRadiusMeters = UserInfoEntity.DEFAULT_GYM_RADIUS_METERS;
         SelectedGymCoordinates coordinates = uiState.getSelectedGymCoordinates();
         if (coordinates != null) {
             userInfo.gymLatitude = coordinates.latitude();

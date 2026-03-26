@@ -62,6 +62,7 @@ public final class MainDashboardRepository {
     }
 
     public DashboardSnapshot load() {
+        UserInfoStore.getOrCreate(userInfoDao);
         GymSessionEntity activeSessionEntity = gymSessionDao.getActiveSession();
         DashboardActiveSession activeSession = activeSessionEntity == null || activeSessionEntity.checkInTime == null
                 ? null

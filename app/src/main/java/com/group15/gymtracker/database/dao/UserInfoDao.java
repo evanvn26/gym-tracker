@@ -41,6 +41,9 @@ public interface UserInfoDao {
     @Query("UPDATE UserInfo SET gym_latitude = :lat, gym_longitude = :lng WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
     void updateGymLocation(double lat, double lng);
 
+    @Query("UPDATE UserInfo SET gym_radius_meters = :radiusMeters WHERE id = (SELECT id FROM UserInfo LIMIT 1)")
+    void updateGymRadius(int radiusMeters);
+
     @Query("SELECT blocked_apps FROM UserInfo LIMIT 1")
     String getBlockedApps();
 

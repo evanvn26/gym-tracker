@@ -8,6 +8,8 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "UserInfo")
 public class UserInfoEntity {
 
+    public static final int DEFAULT_GYM_RADIUS_METERS = 600;
+
     @PrimaryKey(autoGenerate = true)
     public int id;
 
@@ -35,7 +37,7 @@ public class UserInfoEntity {
     @ColumnInfo(name = "gym_longitude")
     public double gymLongitude;
 
-    @ColumnInfo(name = "gym_radius_meters", defaultValue = "100")
+    @ColumnInfo(name = "gym_radius_meters", defaultValue = "600")
     public int gymRadiusMeters;
 
     public UserInfoEntity() {
@@ -45,6 +47,6 @@ public class UserInfoEntity {
         this.freezeTokens = 0;
         this.createdAt = System.currentTimeMillis();
         this.blockedApps = "[]";
-        this.gymRadiusMeters = 100;
+        this.gymRadiusMeters = DEFAULT_GYM_RADIUS_METERS;
     }
 }

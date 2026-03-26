@@ -11,6 +11,10 @@ public final class UserInfoStore {
     public static UserInfoEntity getOrCreate(UserInfoDao userInfoDao) {
         UserInfoEntity userInfo = userInfoDao.getUserInfo();
         if (userInfo != null) {
+            if (userInfo.gymRadiusMeters != UserInfoEntity.DEFAULT_GYM_RADIUS_METERS) {
+                userInfo.gymRadiusMeters = UserInfoEntity.DEFAULT_GYM_RADIUS_METERS;
+                userInfoDao.updateGymRadius(UserInfoEntity.DEFAULT_GYM_RADIUS_METERS);
+            }
             return userInfo;
         }
 

@@ -76,6 +76,10 @@ public class MidnightCheckWorkerTest {
         }
 
         @Override
+        public void updateGymRadius(int radiusMeters) {
+        }
+
+        @Override
         public String getBlockedApps() {
             return blockedApps;
         }

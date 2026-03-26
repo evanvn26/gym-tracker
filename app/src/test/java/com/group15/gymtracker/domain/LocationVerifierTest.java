@@ -71,7 +71,7 @@ public class LocationVerifierTest {
         UserInfoEntity userInfo = new UserInfoEntity();
         userInfo.gymLatitude = 51.5;
         userInfo.gymLongitude = -0.12;
-        userInfo.gymRadiusMeters = 120;
+        userInfo.gymRadiusMeters = UserInfoEntity.DEFAULT_GYM_RADIUS_METERS;
         return userInfo;
     }
 
@@ -169,6 +169,10 @@ public class LocationVerifierTest {
 
         @Override
         public void updateGymLocation(double lat, double lng) {
+        }
+
+        @Override
+        public void updateGymRadius(int radiusMeters) {
         }
 
         @Override

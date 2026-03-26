@@ -13,7 +13,6 @@ import java.util.Date;
 import java.util.Locale;
 
 public class LocationVerifier {
-
     private final GymSessionDao gymSessionDao;
     private final UserInfoDao userInfoDao;
 
@@ -34,7 +33,7 @@ public class LocationVerifier {
     }
 
     public CheckInStatus verifyAndCheckInDetailed(Location currentLocation) {
-        UserInfoEntity userInfo = userInfoDao.getUserInfo();
+        UserInfoEntity userInfo = UserInfoStore.getOrCreate(userInfoDao);
         CheckInStatus status = evaluateCheckIn(
                 userInfo,
                 gymSessionDao.getActiveSession() != null,

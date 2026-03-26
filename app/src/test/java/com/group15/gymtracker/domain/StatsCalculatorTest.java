@@ -310,6 +310,11 @@ public class StatsCalculatorTest {
         }
 
         @Override
+        public void updateGymRadius(int radiusMeters) {
+            userInfo.gymRadiusMeters = radiusMeters;
+        }
+
+        @Override
         public String getBlockedApps() {
             return userInfo == null ? "[]" : userInfo.blockedApps;
         }

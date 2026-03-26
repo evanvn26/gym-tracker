@@ -260,6 +260,13 @@ public class OnboardingRepositoryTest {
         }
 
         @Override
+        public void updateGymRadius(int radiusMeters) {
+            if (storedUserInfo != null) {
+                storedUserInfo.gymRadiusMeters = radiusMeters;
+            }
+        }
+
+        @Override
         public String getBlockedApps() {
             return storedUserInfo == null ? "[]" : storedUserInfo.blockedApps;
         }
