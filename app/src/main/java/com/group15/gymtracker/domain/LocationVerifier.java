@@ -17,8 +17,6 @@ public class LocationVerifier {
     private final GymSessionDao gymSessionDao;
     private final UserInfoDao userInfoDao;
 
-    // Default threshold values
-    private static final double DEFAULT_RADIUS_METERS = 50.0;
     private static final float REQUIRED_GPS_ACCURACY_METERS = 50.0f;
 
     public LocationVerifier(GymSessionDao gymSessionDao, UserInfoDao userInfoDao) {
@@ -32,43 +30,28 @@ public class LocationVerifier {
      * @return true if check-in successful, false otherwise
      */
     public boolean verifyAndCheckIn(Location currentLocation) {
-        // Get gym location from database
+        return verifyAndCheckInDetailed(currentLocation) == CheckInStatus.SUCCESS;
+    }
+
+    public CheckInStatus verifyAndCheckInDetailed(Location currentLocation) {
         UserInfoEntity userInfo = userInfoDao.getUserInfo();
-        if (userInfo == null) {
-            return false; // No user info configured
-        }
-
-        double gymLat = userInfo.gymLatitude;
-        double gymLng = userInfo.gymLongitude;
-        int gymRadius = userInfo.gymRadiusMeters;
-
-        // Check GPS accuracy
-        float accuracy = currentLocation.getAccuracy();
-        if (accuracy > REQUIRED_GPS_ACCURACY_METERS) {
-            return false; // GPS accuracy too poor
-        }
-
-        // Calculate distance to gym using Haversine formula
-        double distance = calculateDistance(
+        CheckInStatus status = evaluateCheckIn(
+                userInfo,
+                gymSessionDao.getActiveSession() != null,
+                currentLocation.getAccuracy(),
                 currentLocation.getLatitude(),
                 currentLocation.getLongitude(),
-                gymLat,
-                gymLng
+                userInfo == null ? 0d : userInfo.gymLatitude,
+                userInfo == null ? 0d : userInfo.gymLongitude
         );
-
-        // Check if within acceptable radius
-        if (distance <= gymRadius) {
-            // Create check-in session
+        if (status == CheckInStatus.SUCCESS) {
             String todayDate = getTodayDate();
             long checkInTime = System.currentTimeMillis();
 
             GymSessionEntity session = new GymSessionEntity(todayDate, checkInTime);
             gymSessionDao.insert(session);
-
-            return true; // Check-in successful
         }
-
-        return false; // Not at gym location
+        return status;
     }
 
     /**
@@ -113,5 +96,35 @@ public class LocationVerifier {
     public boolean checkOut() {
         return new GymSessionTracker(gymSessionDao, userInfoDao)
                 .checkOutActiveSession(System.currentTimeMillis());
+    }
+
+    CheckInStatus evaluateCheckIn(
+            UserInfoEntity userInfo,
+            boolean hasActiveSession,
+            float accuracy,
+            double currentLatitude,
+            double currentLongitude,
+            double gymLatitude,
+            double gymLongitude
+    ) {
+        if (hasActiveSession) {
+            return CheckInStatus.ALREADY_CHECKED_IN;
+        }
+        if (userInfo == null) {
+            return CheckInStatus.NOT_CONFIGURED;
+        }
+        if (accuracy > REQUIRED_GPS_ACCURACY_METERS) {
+            return CheckInStatus.POOR_ACCURACY;
+        }
+
+        double distance = calculateDistance(
+                currentLatitude,
+                currentLongitude,
+                gymLatitude,
+                gymLongitude
+        );
+        return distance <= userInfo.gymRadiusMeters
+                ? CheckInStatus.SUCCESS
+                : CheckInStatus.OUTSIDE_GYM;
     }
 }
