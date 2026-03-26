@@ -21,6 +21,8 @@ import androidx.activity.ComponentActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
+import androidx.core.location.LocationManagerCompat;
+import androidx.core.os.CancellationSignal;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -62,6 +64,8 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class MainActivity extends ComponentActivity {
+
+    private static final long LOCATION_TIMEOUT_MS = 10_000L;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -119,6 +123,9 @@ public class MainActivity extends ComponentActivity {
     private DashboardSnapshot currentSnapshot;
     private String sessionMessage;
     private boolean sessionMessageIsError;
+    private CancellationSignal currentLocationCancellationSignal;
+    private Runnable currentLocationTimeoutRunnable;
+    private int currentLocationRequestToken;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,6 +167,7 @@ public class MainActivity extends ComponentActivity {
     @Override
     protected void onDestroy() {
         stopElapsedTimer();
+        cancelCurrentLocationRequest();
         executor.shutdownNow();
         super.onDestroy();
     }
@@ -438,23 +446,141 @@ public class MainActivity extends ComponentActivity {
         renderSessionCard(currentSnapshot);
         sessionPrimaryButton.setEnabled(false);
         sessionSecondaryButton.setEnabled(false);
+        requestFreshLocation();
+    }
 
-        executor.execute(() -> {
-            Location location = getBestLastKnownLocation();
-            if (location == null) {
-                runOnUiThread(() -> {
-                    showSessionMessage(getString(R.string.dashboard_location_unavailable), true);
-                    renderSessionCard(currentSnapshot);
-                });
+    private void requestFreshLocation() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) {
+            renderLocationFailure(getString(R.string.dashboard_location_unavailable));
+            return;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            showSessionMessage(getString(R.string.dashboard_permission_required), true);
+            renderSessionCard(currentSnapshot);
+            return;
+        }
+
+        cancelCurrentLocationRequest();
+        int requestToken = ++currentLocationRequestToken;
+        requestCurrentLocation(locationManager, LocationManager.GPS_PROVIDER, requestToken, true);
+    }
+
+    private void requestCurrentLocation(
+            LocationManager locationManager,
+            String provider,
+            int requestToken,
+            boolean allowNetworkFallback
+    ) {
+        if (!isProviderUsable(locationManager, provider)) {
+            if (allowNetworkFallback && LocationManager.GPS_PROVIDER.equals(provider)) {
+                requestCurrentLocation(locationManager, LocationManager.NETWORK_PROVIDER, requestToken, false);
                 return;
             }
+            renderLocationFailure(getString(R.string.dashboard_location_unavailable));
+            return;
+        }
 
-            CheckInStatus status = new LocationVerifier(
-                    database.gymSessionDao(),
-                    database.userInfoDao()
-            ).verifyAndCheckInDetailed(location);
+        CancellationSignal cancellationSignal = new CancellationSignal();
+        currentLocationCancellationSignal = cancellationSignal;
 
-            runOnUiThread(() -> handleCheckInStatus(status));
+        Runnable timeoutRunnable = () -> {
+            if (!isActiveLocationRequest(requestToken, cancellationSignal)) {
+                return;
+            }
+            cancellationSignal.cancel();
+            clearCurrentLocationRequest(cancellationSignal, currentLocationTimeoutRunnable);
+            renderLocationFailure(getString(R.string.dashboard_location_unavailable));
+        };
+        currentLocationTimeoutRunnable = timeoutRunnable;
+        handler.postDelayed(timeoutRunnable, LOCATION_TIMEOUT_MS);
+
+        LocationManagerCompat.getCurrentLocation(
+                locationManager,
+                provider,
+                cancellationSignal,
+                executor,
+                location -> {
+                    if (!isActiveLocationRequest(requestToken, cancellationSignal)) {
+                        return;
+                    }
+
+                    clearCurrentLocationRequest(cancellationSignal, timeoutRunnable);
+
+                    if (location != null) {
+                        handleResolvedLocation(location);
+                        return;
+                    }
+
+                    if (allowNetworkFallback && LocationManager.GPS_PROVIDER.equals(provider)) {
+                        requestCurrentLocation(locationManager, LocationManager.NETWORK_PROVIDER, requestToken, false);
+                        return;
+                    }
+
+                    renderLocationFailure(getString(R.string.dashboard_location_unavailable));
+                }
+        );
+    }
+
+    private boolean isProviderUsable(LocationManager locationManager, String provider) {
+        if (!LocationManagerCompat.hasProvider(locationManager, provider)) {
+            return false;
+        }
+
+        try {
+            return locationManager.isProviderEnabled(provider);
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private boolean isActiveLocationRequest(int requestToken, CancellationSignal cancellationSignal) {
+        return requestToken == currentLocationRequestToken
+                && cancellationSignal == currentLocationCancellationSignal
+                && !cancellationSignal.isCanceled();
+    }
+
+    private void clearCurrentLocationRequest(
+            CancellationSignal cancellationSignal,
+            Runnable timeoutRunnable
+    ) {
+        if (currentLocationCancellationSignal == cancellationSignal) {
+            currentLocationCancellationSignal = null;
+        }
+        if (currentLocationTimeoutRunnable == timeoutRunnable) {
+            handler.removeCallbacks(timeoutRunnable);
+            currentLocationTimeoutRunnable = null;
+        } else {
+            handler.removeCallbacks(timeoutRunnable);
+        }
+    }
+
+    private void cancelCurrentLocationRequest() {
+        if (currentLocationTimeoutRunnable != null) {
+            handler.removeCallbacks(currentLocationTimeoutRunnable);
+            currentLocationTimeoutRunnable = null;
+        }
+        if (currentLocationCancellationSignal != null) {
+            currentLocationCancellationSignal.cancel();
+            currentLocationCancellationSignal = null;
+        }
+    }
+
+    private void handleResolvedLocation(Location location) {
+        CheckInStatus status = new LocationVerifier(
+                database.gymSessionDao(),
+                database.userInfoDao()
+        ).verifyAndCheckInDetailed(location);
+
+        runOnUiThread(() -> handleCheckInStatus(status));
+    }
+
+    private void renderLocationFailure(String message) {
+        runOnUiThread(() -> {
+            showSessionMessage(message, true);
+            renderSessionCard(currentSnapshot);
         });
     }
 
@@ -544,27 +670,6 @@ public class MainActivity extends ComponentActivity {
 
     private float dp(float value) {
         return value * getResources().getDisplayMetrics().density;
-    }
-
-    private Location getBestLastKnownLocation() {
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        if (locationManager == null) {
-            return null;
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            return null;
-        }
-
-        Location gps = null;
-        Location network = null;
-        try {
-            gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            network = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        } catch (Exception ignored) {
-        }
-        return gps != null ? gps : network;
     }
 
     private String formatSessionDate(String sessionDate, Long checkInTimeMillis) {
