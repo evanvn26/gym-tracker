@@ -6,6 +6,8 @@ import com.group15.gymtracker.database.entities.DailyTargetEntity;
 import com.group15.gymtracker.database.entities.UserInfoEntity;
 import com.group15.gymtracker.domain.UserInfoStore;
 
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 
 public final class OnboardingRepository {
@@ -54,5 +56,32 @@ public final class OnboardingRepository {
         }
 
         flagStore.markComplete();
+    }
+
+    public OnboardingUiState loadExistingState() {
+        OnboardingUiState state = new OnboardingUiState();
+
+        UserInfoEntity userInfo = UserInfoStore.getOrCreate(userInfoDao);
+        state.setBlockedPackages(OnboardingUtils.deserializeBlockedPackages(userInfo.blockedApps));
+        state.setSelectedGymCoordinates(new SelectedGymCoordinates(userInfo.gymLatitude, userInfo.gymLongitude));
+        state.setLocationConfirmed(true);
+
+        List<DailyTargetEntity> targets = dailyTargetDao.getAllTargets();
+        LinkedHashSet<String> selectedDays = new LinkedHashSet<>();
+        float sessionHours = 1f;
+        boolean hasPositiveTarget = false;
+
+        for (DailyTargetEntity target : targets) {
+            if (target.targetMinutes <= 0) {
+                continue;
+            }
+            hasPositiveTarget = true;
+            selectedDays.add(target.dayOfWeek);
+            sessionHours = target.targetMinutes / 60f;
+        }
+
+        state.setSelectedDays(selectedDays);
+        state.setSessionHours(hasPositiveTarget ? sessionHours : 1f);
+        return state;
     }
 }
