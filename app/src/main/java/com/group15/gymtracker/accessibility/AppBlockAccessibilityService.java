@@ -23,7 +23,11 @@ public class AppBlockAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null) return;
-        if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
+        int eventType = event.getEventType();
+        if (eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                && eventType != AccessibilityEvent.TYPE_WINDOWS_CHANGED) {
+            return;
+        }
 
         if (overlayController == null) {
             overlayController = new LockOverlayController(this);

@@ -36,7 +36,7 @@ public class LockOverlayForegroundPolicyTest {
     }
 
     @Test
-    public void transitionToLauncherOrSystemUi_returnsHide() {
+    public void transientLauncherOrSystemUiWhileCoveringBlockedApp_keepsOverlayVisible() {
         LockOverlayForegroundPolicy.Decision launcherDecision = decide(LAUNCHER_PACKAGE, true, BLOCKED_PACKAGE);
         LockOverlayForegroundPolicy.Decision systemUiDecision = decide(
                 LockOverlayForegroundPolicy.SYSTEM_UI_PACKAGE,
@@ -44,8 +44,30 @@ public class LockOverlayForegroundPolicyTest {
                 BLOCKED_PACKAGE
         );
 
-        assertEquals(LockOverlayForegroundPolicy.Action.HIDE, launcherDecision.action());
-        assertEquals(LockOverlayForegroundPolicy.Action.HIDE, systemUiDecision.action());
+        assertEquals(LockOverlayForegroundPolicy.Action.UPDATE, launcherDecision.action());
+        assertEquals(BLOCKED_PACKAGE, launcherDecision.blockedPackage());
+        assertEquals(LockOverlayForegroundPolicy.Action.UPDATE, systemUiDecision.action());
+        assertEquals(BLOCKED_PACKAGE, systemUiDecision.blockedPackage());
+    }
+
+    @Test
+    public void launcherOrSystemUiWithoutActiveOverlay_returnsNone() {
+        LockOverlayForegroundPolicy.Decision launcherDecision = decide(LAUNCHER_PACKAGE, true, null);
+        LockOverlayForegroundPolicy.Decision systemUiDecision = decide(
+                LockOverlayForegroundPolicy.SYSTEM_UI_PACKAGE,
+                true,
+                null
+        );
+
+        assertEquals(LockOverlayForegroundPolicy.Action.NONE, launcherDecision.action());
+        assertEquals(LockOverlayForegroundPolicy.Action.NONE, systemUiDecision.action());
+    }
+
+    @Test
+    public void transitionToUnblockedApp_returnsHide() {
+        LockOverlayForegroundPolicy.Decision decision = decide("com.android.settings", true, BLOCKED_PACKAGE);
+
+        assertEquals(LockOverlayForegroundPolicy.Action.HIDE, decision.action());
     }
 
     @Test

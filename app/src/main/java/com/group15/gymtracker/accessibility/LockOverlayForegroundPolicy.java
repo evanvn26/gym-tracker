@@ -21,10 +21,13 @@ final class LockOverlayForegroundPolicy {
             return coveredPackage == null ? Decision.none() : Decision.hide();
         }
 
-        if (foregroundPackage.equals(appPackage)
-                || foregroundPackage.equals(SYSTEM_UI_PACKAGE)
-                || (launcherPackage != null && foregroundPackage.equals(launcherPackage))) {
+        if (foregroundPackage.equals(appPackage)) {
             return coveredPackage == null ? Decision.none() : Decision.hide();
+        }
+
+        if (foregroundPackage.equals(SYSTEM_UI_PACKAGE)
+                || (launcherPackage != null && foregroundPackage.equals(launcherPackage))) {
+            return coveredPackage == null ? Decision.none() : Decision.update(coveredPackage);
         }
 
         if (!lockActive || !blockedPackages.contains(foregroundPackage)) {
