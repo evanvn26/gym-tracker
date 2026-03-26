@@ -34,13 +34,6 @@
             android:theme="@style/Theme.GymTracker" />
 
         <activity
-            android:name=".accessibility.LockOverlayActivity"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.GymTracker" />
-
-        <activity
             android:name=".ui.stats.StatsActivity"
             android:exported="false"
             android:theme="@style/Theme.GymTracker" />

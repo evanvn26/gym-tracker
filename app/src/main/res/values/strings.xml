@@ -81,6 +81,10 @@
     <string name="dashboard_freeze_token_unlock_no_tokens">You do not have any freeze tokens available.</string>
     <string name="dashboard_history_duration">%1$d min</string>
     <string name="dashboard_manage_body">Update the targets, blocked apps, and saved gym coordinates that power the dashboard.</string>
+    <string name="lock_overlay_title">This app is locked</string>
+    <string name="lock_overlay_reason">Reason: %1$s</string>
+    <string name="lock_overlay_blocked_app">Blocked app: %1$s</string>
+    <string name="lock_overlay_unlocks">Unlocks at: %1$s</string>
     <string name="day_monday">Monday</string>
     <string name="day_tuesday">Tuesday</string>
     <string name="day_wednesday">Wednesday</string>

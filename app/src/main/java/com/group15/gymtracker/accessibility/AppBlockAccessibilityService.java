@@ -4,45 +4,58 @@ import android.accessibilityservice.AccessibilityService;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.os.SystemClock;
 import android.view.accessibility.AccessibilityEvent;
 
 import com.group15.gymtracker.domain.AppLocker;
 
 public class AppBlockAccessibilityService extends AccessibilityService {
 
-    private static final long OVERLAY_COOLDOWN_MS = 800;
-    private long lastOverlayLaunchTime = 0L;
+    private LockOverlayController overlayController;
+    private String defaultLauncherPackage;
+
+    @Override
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        overlayController = new LockOverlayController(this);
+        defaultLauncherPackage = getDefaultLauncherPackage();
+    }
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event == null) return;
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
-        if (event.getPackageName() == null) return;
 
-        String packageName = event.getPackageName().toString();
-
-        if (packageName.equals(getPackageName())) return;
-        if (packageName.equals("com.android.systemui")) return;
-        if (packageName.equals(getDefaultLauncherPackage())) return;
-
-        AppLocker locker = new AppLocker(this);
-        if (!locker.shouldBlock(packageName)) return;
-
-        long now = SystemClock.elapsedRealtime();
-        if (now - lastOverlayLaunchTime < OVERLAY_COOLDOWN_MS) {
-            return;
+        if (overlayController == null) {
+            overlayController = new LockOverlayController(this);
         }
-        lastOverlayLaunchTime = now;
+        if (defaultLauncherPackage == null) {
+            defaultLauncherPackage = getDefaultLauncherPackage();
+        }
 
-        performGlobalAction(GLOBAL_ACTION_HOME);
+        String packageName = event.getPackageName() == null ? null : event.getPackageName().toString();
+        AppLocker locker = new AppLocker(this);
+        LockOverlayForegroundPolicy.Decision decision = LockOverlayForegroundPolicy.decide(
+                packageName,
+                getPackageName(),
+                defaultLauncherPackage,
+                locker.isLocked(),
+                locker.getBlockedPackages(),
+                overlayController.getCoveredPackage()
+        );
 
-        Intent intent = new Intent(this, LockOverlayActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        intent.putExtra("blocked_package", packageName);
-        startActivity(intent);
+        switch (decision.action()) {
+            case SHOW:
+                overlayController.show(locker, decision.blockedPackage());
+                break;
+            case UPDATE:
+                overlayController.update(locker, decision.blockedPackage());
+                break;
+            case HIDE:
+                overlayController.hide();
+                break;
+            case NONE:
+                break;
+        }
     }
 
     private String getDefaultLauncherPackage() {
@@ -54,6 +67,18 @@ public class AppBlockAccessibilityService extends AccessibilityService {
 
     @Override
     public void onInterrupt() {
-        // no-op
+        clearOverlay();
+    }
+
+    @Override
+    public void onDestroy() {
+        clearOverlay();
+        super.onDestroy();
+    }
+
+    private void clearOverlay() {
+        if (overlayController != null) {
+            overlayController.destroy();
+        }
     }
 }

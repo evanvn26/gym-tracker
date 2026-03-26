@@ -39,29 +39,39 @@ public class AppLocker {
     }
 
     public boolean isLocked() {
+        refreshExpiredLockIfNeeded();
         return prefs.getBoolean(KEY_IS_LOCKED, false);
     }
 
     public boolean shouldBlock(String packageName) {
         if (!isLocked()) return false;
-        long unlockAt = getUnlockAtMillis();
-        if (unlockAt > 0 && System.currentTimeMillis() >= unlockAt) {
-            unlockApps();
-            return false;
-        }
-        Set<String> blocked = prefs.getStringSet(KEY_BLOCKED_PACKAGES, Collections.emptySet());
+        Set<String> blocked = getBlockedPackages();
         return blocked.contains(packageName);
     }
 
     public Set<String> getBlockedPackages() {
+        refreshExpiredLockIfNeeded();
         return new HashSet<>(prefs.getStringSet(KEY_BLOCKED_PACKAGES, Collections.emptySet()));
     }
 
     public String getReason() {
+        refreshExpiredLockIfNeeded();
         return prefs.getString(KEY_REASON, "");
     }
 
     public long getUnlockAtMillis() {
+        refreshExpiredLockIfNeeded();
         return prefs.getLong(KEY_UNLOCK_AT, 0L);
+    }
+
+    private void refreshExpiredLockIfNeeded() {
+        if (!prefs.getBoolean(KEY_IS_LOCKED, false)) {
+            return;
+        }
+
+        long unlockAt = prefs.getLong(KEY_UNLOCK_AT, 0L);
+        if (unlockAt > 0 && System.currentTimeMillis() >= unlockAt) {
+            unlockApps();
+        }
     }
 }
